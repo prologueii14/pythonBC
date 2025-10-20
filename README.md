@@ -1,6 +1,4 @@
-markdown# Python P2P Blockchain Implementation
-
-一個完整的點對點區塊鏈系統，使用 Python 從 Java 重新實作。
+注意注意 -> README made by Claude <-
 
 ## 📋 目錄
 
