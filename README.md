@@ -327,6 +327,3 @@ SOCKET_PORT = 8300                 # 預設埠號
 PUBLIC_KEY_ALGORITHM = "RSA"       # 公鑰演算法
 PUBLIC_KEY_LENGTH = 1024           # RSA 金鑰長度
 SIGNATURE_ALGORITHM = "SHA3-256withRSA"  # 簽章演算法
-
-#### 三節點同時運行
-![Three Nodes Running](three_nodes.png)
