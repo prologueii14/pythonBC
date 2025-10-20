@@ -1,0 +1,30 @@
+cat > .gitignore << 'EOF'
+# Java
+target/
+out/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+logs/
+*.log
+tmp/
+.cache/
+
+# Build tools
+.mvn/
+EOF
