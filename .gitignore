@@ -24,6 +24,7 @@ logs/
 *.log
 tmp/
 .cache/
+.txt
 
 # Build tools
 .mvn/
