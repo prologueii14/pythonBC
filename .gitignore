@@ -29,3 +29,13 @@ tmp/
 # Build tools
 .mvn/
 EOF
+
+# pycache
+blockchain_types/__pycache__
+config/__pycache__
+tools/__pycache__
+tests/__pycache__
+__pycache__
+
+# private stuff
+wallets/

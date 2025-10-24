@@ -56,6 +56,21 @@ pip install -r requirements.txt
 pytest>=7.4.0           # 測試框架
 
 ```
+- optional -> venv
+```bash
+# 建立虛擬環境
+python3 -m venv BS_Env
+
+# 啟用環境(macOS, Linux)
+source BS_Env/bin/activate
+
+# 啟用環境(Windows)
+BS_Env\Scripts\activate
+
+# 安裝套件
+pip install -r requirements.txt
+```
+
 #### 3. 驗證安裝
 ```bash執行所有測試
 python -m pytest tests/ -v應該看到: 94 passed
