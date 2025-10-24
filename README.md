@@ -44,19 +44,22 @@
 ### 安裝步驟
 
 #### 1. 克隆專案
-```bashgit clone <repository-url>
+```bash
+git clone <repository-url>
 cd pythonBC
-
+```
 #### 2. 安裝依賴
-```bashpip install -r requirements.txt
+```bash
+pip install -r requirements.txt
 
-**依賴套件:**cryptography>=41.0.0    # RSA 加密和簽章
+# **依賴套件:**cryptography>=41.0.0    # RSA 加密和簽章
 pytest>=7.4.0           # 測試框架
 
+```
 #### 3. 驗證安裝
 ```bash執行所有測試
 python -m pytest tests/ -v應該看到: 94 passed
-
+```
 ---
 
 ## 🚀 快速開始
@@ -64,23 +67,26 @@ python -m pytest tests/ -v應該看到: 94 passed
 ### 單節點模式
 
 啟動一個區塊鏈節點:
-```bashpython start_blockchain.py
+```bash
+python start_blockchain.py
 
 預設配置:
 - Wallet 名稱: `DefaultNode`
 - 監聽埠號: `8300`
-
+```
 ### 自訂節點
 
 指定錢包名稱和埠號:
-```bashpython start_blockchain.py Alice 8300
-
+```bash
+python start_blockchain.py Alice 8300
+```
+```bash
 你會看到:[...] Account: MIGfMA0GCSqGSIb3DQEBAQUAA4G... loaded.
 [...] Creating Genesis Block...
 [...] Hash Found: 0abc123... @ Difficulty: 1, Time Cost: 0s
 [...] Network Ready on port 8300
 [...] Hash Found: 0def456... @ Difficulty: 1, Time Cost: 1s
-
+```
 ### 停止節點
 
 按 `Ctrl+C` 停止節點。
@@ -90,18 +96,20 @@ python -m pytest tests/ -v應該看到: 94 passed
 ## 🧪 測試
 
 ### 執行所有測試
-```bashpython -m pytest tests/ -v
-
+```bash
+python -m pytest tests/ -v
+```
 ### 分層測試
-```bashLayer 1: 基礎工具 (28 tests)
+```bash
+# Layer 1: 基礎工具 (28 tests)
 python -m pytest tests/test_layer1.py -vLayer 2: 加密與簽章 (13 tests)
 python -m pytest tests/test_layer2.py -vLayer 3: 資料結構 (27 tests)
 python -m pytest tests/test_layer3.py -vLayer 4: 區塊鏈核心 (21 tests)
 python -m pytest tests/test_layer4.py -vLayer 5: P2P Server (5 tests)
 python -m pytest tests/test_layer5.py -v
-
+```
 ### 測試覆蓋率
-
+```bash
 | Layer | 功能 | 測試數 | 狀態 |
 |-------|------|--------|------|
 | Layer 1 | 基礎工具 | 28 | ✅ |
@@ -110,7 +118,7 @@ python -m pytest tests/test_layer5.py -v
 | Layer 4 | 區塊鏈核心 | 21 | ✅ |
 | Layer 5 | P2P Server | 5 | ✅ |
 | **總計** | | **94** | **✅** |
-
+```
 ---
 
 ## 🌐 P2P 網路驗證
@@ -120,19 +128,24 @@ python -m pytest tests/test_layer5.py -v
 在**三個不同的終端機**中執行:
 
 #### Terminal 1: Node1 (Alice)
-```bashpython start_blockchain.py Alice 8300
-
+```bash
+python start_blockchain.py Alice 8300
+```
 #### Terminal 2: Node2 (Bob)
-```bashpython start_blockchain.py Bob 8301
-
+```bash
+python start_blockchain.py Bob 8301
+```
 #### Terminal 3: Node3 (Charlie)
-```bashpython start_blockchain.py Charlie 8302
-
+```bash
+python start_blockchain.py Charlie 8302
+```
 ### 測試 P2P 連接
 
 在**第四個終端機**中執行:
-```bashpython verify_p2p.py
-
+```bash
+python verify_p2p.py
+```
+```bash
 **預期輸出:**============================================================
 P2P 區塊鏈網路驗證步驟 1: 建立節點網路
 ✓ Node1 → Node2: Ok
@@ -143,11 +156,11 @@ P2P 區塊鏈網路驗證步驟 1: 建立節點網路
 ✓ Charlie (Port 8302): 520.0 coins步驟 3: 發送交易測試 (Alice → Bob)
 ✓ Transaction sent: Ok============================================================
 驗證完成!
-
+```
 ### 觀察 P2P 廣播
 
 在各個節點的終端機中,你應該看到:
-
+```bash
 **Node1 (發送節點):**[...] Broadcasting broadcastedBlock, Block [previousHash:...
 [...] Broadcasted to 127.0.0.1:8301
 [...] It response T2s=
@@ -157,7 +170,7 @@ P2P 區塊鏈網路驗證步驟 1: 建立節點網路
 **Node2 & Node3 (接收節點):**[...] 127.0.0.1:xxxxx Connected.
 [...] Received: broadcastedBlock, ...
 [...] Block [...] Is a valid block
-
+```
 ---
 
 ## 📡 API 文檔
@@ -188,7 +201,8 @@ P2P 區塊鏈網路驗證步驟 1: 建立節點網路
 ### 使用範例
 
 #### Python 客戶端範例
-```pythonimport socket
+```python
+import socket
 from tools.converter import Converter連接到節點
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', 8300))查詢餘額
@@ -197,7 +211,7 @@ client.sendall(message.encode('utf-8'))接收回應
 response = client.recv(4096).decode('utf-8').strip()
 balance = Converter.base64_to_string(response)
 print(f"Balance: {balance}")client.close()
-
+```
 ---
 
 ## 🔧 技術細節
@@ -218,23 +232,26 @@ print(f"Balance: {balance}")client.close()
 ### 共識機制
 
 #### Proof-of-Work (PoW)
-```python挖礦目標: hash 必須以 N 個 0 開頭
+```python
+挖礦目標: hash 必須以 N 個 0 開頭
 N = 難度 (difficulty)範例:
 difficulty = 3
 target = "000..."  # 3 個 0持續嘗試 nonce 直到:
 hash(block_content + nonce).startswith(target)
-
+```
 #### 難度調整
-```python每 10 個區塊調整一次
+```python
+每 10 個區塊調整一次
 目標: 平均 30 秒一個區塊if average_block_time > 30s:
 difficulty -= 1  # 降低難度
 else:
 difficulty += 1  # 提高難度
-
+```
 ### 資料結構
 
 #### Transaction
-```python{
+```python
+{
 "sender": "MIGfMA0GCSqGSIb...",     # Base64 公鑰
 "receiver": "MIGfMA0GCSqGSIb...",   # Base64 公鑰
 "amount": 100.0,                    # 轉帳金額
@@ -243,9 +260,10 @@ difficulty += 1  # 提高難度
 "message": "Payment",               # 備註
 "signature": "AbCdEf..."            # Base64 簽章
 }
-
+```
 #### Block
-```python{
+```python
+{
 "previousHash": "0abc123...",       # 前一區塊雜湊
 "hash": "0def456...",               # 本區塊雜湊
 "difficulty": 3,                    # 挖礦難度
@@ -256,10 +274,11 @@ difficulty += 1  # 提高難度
 "miner": "MIGfMA0GCSqGSIb...",     # 礦工地址
 "minerRewards": 10.0                # 挖礦獎勵
 }
-
+```
 ---
 
 ## 📁 專案結構pythonBC/
+```bash
 ├── config/                          # 配置檔案
 │   ├── init.py
 │   ├── blockchain_config.py         # 區塊鏈參數
@@ -304,13 +323,14 @@ difficulty += 1  # 提高難度
 ├── verify_p2p.py                    # P2P 驗證腳本
 ├── requirements.txt                 # Python 依賴
 └── README.md                        # 本文件
-
+```
 ---
 
 ## ⚙️ 配置參數
 
 ### blockchain_config.py
-```pythonADJUST_DIFFICULTY_IN_EVERY = 10    # 每 10 個區塊調整難度
+```python
+ADJUST_DIFFICULTY_IN_EVERY = 10    # 每 10 個區塊調整難度
 INIT_DIFFICULTY = 1                # 初始難度
 BLOCK_TIME_IN_EVERY = 30           # 目標區塊時間 (秒)
 MINING_REWARDS = 10.0              # 挖礦獎勵
@@ -325,3 +345,4 @@ SOCKET_PORT = 8300                 # 預設埠號
 PUBLIC_KEY_ALGORITHM = "RSA"       # 公鑰演算法
 PUBLIC_KEY_LENGTH = 1024           # RSA 金鑰長度
 SIGNATURE_ALGORITHM = "SHA3-256withRSA"  # 簽章演算法
+```
