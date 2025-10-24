@@ -39,3 +39,6 @@ __pycache__
 
 # private stuff
 wallets/
+
+# ignore
+BS_Env/
