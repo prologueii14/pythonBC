@@ -7,7 +7,7 @@ Based on elliptic_curve.py
 import hashlib
 import secrets
 import hmac
-from elliptic_curve import *
+from elliptic_curve import EllipticCurve
 
 
 class ECDSA:
@@ -39,7 +39,7 @@ class ECDSA:
             - private_key: random integer in [1, n-1]
             - public_key: ECPoint = private_key * G
         """
-        # Private key: random integer in [1, n-1]
+        # Private key (d): random integer in [1, n-1]
         private_key = secrets.randbelow(self.n - 1) + 1
         
         # Public key: Q = d * G
@@ -47,14 +47,14 @@ class ECDSA:
         
         return private_key, public_key
     
-    def sign(self, message, private_key, hash_func=hashlib.sha256, deterministic=True):
+    def sign(self, message, private_key, hash_func=hashlib.sha3_256, deterministic=True):
         """
         Sign a message using ECDSA
         
         Args:
             message: bytes or string to sign
             private_key: integer private key
-            hash_func: hash function to use (default: SHA-256)
+            hash_func: hash function to use (default: SHA3-256)
             deterministic: if True, use RFC 6979 deterministic k generation
         
         Returns:
@@ -104,7 +104,7 @@ class ECDSA:
             
             return (r, s)
     
-    def verify(self, message, signature, public_key, hash_func=hashlib.sha256):
+    def verify(self, message, signature, public_key, hash_func=hashlib.sha3_256):
         """
         Verify an ECDSA signature
         
@@ -246,10 +246,10 @@ class StandardCurves:
     def secp256k1():
         """
         Bitcoin's secp256k1 curve
-        y^2 = x^3 + 7 (mod p)
+        https://en.bitcoin.it/wiki/Secp256k1
         """
         # Curve parameters
-        p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+        p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F # 2^256 - 2^32 - 2^9 - 2^8 - 2^7 - 2^6 - 2^4 - 1
         a = 0
         b = 7
         
@@ -289,143 +289,129 @@ class StandardCurves:
 def demonstrate_ecdsa():
     """Demonstrate ECDSA signing and verification"""
     print("=== ECDSA Signing and Verification Demo ===\n")
+
+    def small_curve_demo():
+        """Demonstrate ECDSA with a small curve for educational purposes"""
+        print("[ Demo 1: Using Small Curve ]")
+        print("-" * 50)
+        
+        # Small curve for demonstration
+        p = 223
+        a = 0
+        b = 7
+        
+        curve = EllipticCurve(a, b, p)
+        print(f"{curve}")
+        
+        # Generator point
+        Gx, Gy = 47, 71
+        G = curve.ECPoint(Gx, Gy)
+        n = curve.order(G)
+        
+        ecdsa = ECDSA(curve, G, n)
+        
+        # Generate key pair
+        private_key, public_key = ecdsa.generate_keypair()
+        print(f"\nPrivate Key: {private_key}")
+        print(f"Public Key: {public_key}")
+        
+        # Sign a message
+        message = "Hello, ECDSA!"
+        print(f"\nOriginal Message: {message}")
+        
+        signature = ecdsa.sign(message, private_key)
+        r, s = signature
+        print(f"Signature (r, s):")
+        print(f"  r = {r}")
+        print(f"  s = {s}")
+        
+        # Verify signature
+        is_valid = ecdsa.verify(message, signature, public_key)
+        print(f"\nSignature Verification: {'Valid' if is_valid else 'Invalid'}")
+        
+        # Test with tampered message
+        tampered_message = "Hello, ECDSA?"
+        is_valid = ecdsa.verify(tampered_message, signature, public_key)
+        print(f"Tampered Message Verification: {'Valid' if is_valid else 'Invalid'}")
     
-    # Method 1: Using a small curve for demonstration
-    print("[ Demo 1: Using Small Curve ]")
-    print("-" * 50)
+    def secp256k1_demo():
+        """Demonstrate ECDSA with secp256k1 curve (Bitcoin's curve)"""
+        print("\n\n[ Demo 2: Using secp256k1 (Bitcoin Curve) with RFC 6979 ]")
+        print("-" * 50)
+        
+        ecdsa_secp256k1 = StandardCurves.secp256k1()
+        print(f"Curve: y^2 = x^3 + 7 (mod p)")
+        print(f"Prime p bit length: {ecdsa_secp256k1.curve.p.bit_length()} bits")
+        
+        # Generate key pair
+        private_key, public_key = ecdsa_secp256k1.generate_keypair()
+        print(f"\nPrivate Key: {private_key}")
+        print(f"Public Key:")
+        print(f"  x = {hex(public_key.x)}")
+        print(f"  y = {hex(public_key.y)}")
+        
+        # Sign a message with RFC 6979
+        message = "Bitcoin transaction: Send 1 BTC to Alice"
+        print(f"\nOriginal Message: {message}")
+        
+        signature = ecdsa_secp256k1.sign(message, private_key, deterministic=True)
+        r, s = signature
+        print(f"\nSignature (r, s) - RFC 6979:")
+        print(f"  r = {hex(r)}")
+        print(f"  s = {hex(s)}")
+        
+        # Verify signature
+        is_valid = ecdsa_secp256k1.verify(message, signature, public_key)
+        print(f"\nSignature Verification: {'Valid' if is_valid else 'Invalid'}")
+        
+        # Test determinism
+        print(f"\n--- Testing Determinism ---")
+        signature2 = ecdsa_secp256k1.sign(message, private_key, deterministic=True)
+        print(f"Deterministic Signatures Match: {signature == signature2}")
+        
+        # Test with tampered message
+        tampered_message = "Bitcoin transaction: Send 100 BTC to Alice"
+        is_valid = ecdsa_secp256k1.verify(tampered_message, signature, public_key)
+        print(f"Tampered Message Verification: {'Valid' if is_valid else 'Invalid'}")
     
-    # Small curve for demonstration
-    p = 223
-    a = 0
-    b = 7
-    
-    curve = EllipticCurve(a, b, p)
-    print(f"{curve}")
-    
-    # Generator point
-    Gx, Gy = 47, 71
-    G = curve.ECPoint(Gx, Gy)
-    n = 223  # Simplified (in practice, calculate the actual order)
-    
-    ecdsa = ECDSA(curve, G, n)
-    
-    # Generate key pair
-    private_key, public_key = ecdsa.generate_keypair()
-    print(f"\nPrivate Key: {private_key}")
-    print(f"Public Key: {public_key}")
-    
-    # Sign a message
-    message = "Hello, ECDSA!"
-    print(f"\nOriginal Message: {message}")
-    
-    signature = ecdsa.sign(message, private_key)
-    r, s = signature
-    print(f"Signature (r, s):")
-    print(f"  r = {r}")
-    print(f"  s = {s}")
-    
-    # Verify signature
-    is_valid = ecdsa.verify(message, signature, public_key)
-    print(f"\nSignature Verification: {'Valid' if is_valid else 'Invalid'}")
-    
-    # Test with tampered message
-    tampered_message = "Hello, ECDSA?"
-    is_valid = ecdsa.verify(tampered_message, signature, public_key)
-    print(f"Tampered Message Verification: {'Valid' if is_valid else 'Invalid'}")
-    
-    # Method 2: Using secp256k1 (Bitcoin's curve)
-    print("\n\n[ Demo 2: Using secp256k1 (Bitcoin Curve) with RFC 6979 ]")
-    print("-" * 50)
-    
-    ecdsa_secp256k1 = StandardCurves.secp256k1()
-    print(f"Curve: y^2 = x^3 + 7 (mod p)")
-    print(f"Prime p bit length: {ecdsa_secp256k1.curve.p.bit_length()} bits")
-    
-    # Generate key pair
-    private_key, public_key = ecdsa_secp256k1.generate_keypair()
-    print(f"\nPrivate Key: {private_key}")
-    print(f"Public Key:")
-    print(f"  x = {hex(public_key.x)}")
-    print(f"  y = {hex(public_key.y)}")
-    
-    # Sign a message with RFC 6979
-    message = "Bitcoin transaction: Send 1 BTC to Alice"
-    print(f"\nOriginal Message: {message}")
-    
-    signature = ecdsa_secp256k1.sign(message, private_key, deterministic=True)
-    r, s = signature
-    print(f"\nSignature (r, s) - RFC 6979:")
-    print(f"  r = {hex(r)}")
-    print(f"  s = {hex(s)}")
-    
-    # Verify signature
-    is_valid = ecdsa_secp256k1.verify(message, signature, public_key)
-    print(f"\nSignature Verification: {'Valid' if is_valid else 'Invalid'}")
-    
-    # Test determinism
-    print(f"\n--- Testing Determinism ---")
-    signature2 = ecdsa_secp256k1.sign(message, private_key, deterministic=True)
-    print(f"Deterministic Signatures Match: {signature == signature2}")
-    
-    # Test with tampered message
-    tampered_message = "Bitcoin transaction: Send 100 BTC to Alice"
-    is_valid = ecdsa_secp256k1.verify(tampered_message, signature, public_key)
-    print(f"Tampered Message Verification: {'Valid' if is_valid else 'Invalid'}")
-    
-    # Method 3: Using secp256r1 (NIST P-256)
-    print("\n\n[ Demo 3: Using secp256r1 (NIST P-256) ]")
-    print("-" * 50)
-    
-    ecdsa_secp256r1 = StandardCurves.secp256r1()
-    print(f"Curve: NIST P-256")
-    print(f"Prime p bit length: {ecdsa_secp256r1.curve.p.bit_length()} bits")
-    
-    # Generate key pair
-    private_key, public_key = ecdsa_secp256r1.generate_keypair()
-    print(f"\nPrivate Key: {private_key}")
-    print(f"Public Key: (truncated)")
-    print(f"  x = {hex(public_key.x)[:50]}...")
-    print(f"  y = {hex(public_key.y)[:50]}...")
-    
-    # Sign a message
-    message = "Important document signature"
-    signature = ecdsa_secp256r1.sign(message, private_key)
-    r, s = signature
-    print(f"\nMessage: {message}")
-    print(f"Signature (r, s): (truncated)")
-    print(f"  r = {hex(r)[:50]}...")
-    print(f"  s = {hex(s)[:50]}...")
-    
-    # Verify signature
-    is_valid = ecdsa_secp256r1.verify(message, signature, public_key)
-    print(f"\nSignature Verification: {'Valid' if is_valid else 'Invalid'}")
-    
-    # Performance test
-    print("\n\n[ Performance Test ]")
-    print("-" * 50)
-    import time
-    
-    iterations = 10
-    
-    # Use secp256k1 for performance test
-    perf_message = "Performance test message"
-    perf_private_key, perf_public_key = ecdsa_secp256k1.generate_keypair()
-    perf_signature = ecdsa_secp256k1.sign(perf_message, perf_private_key, deterministic=True)
-    
-    # Test signing
-    start = time.time()
-    for _ in range(iterations):
-        ecdsa_secp256k1.sign(perf_message, perf_private_key, deterministic=True)
-    sign_time = (time.time() - start) / iterations
-    
-    # Test verification
-    start = time.time()
-    for _ in range(iterations):
-        ecdsa_secp256k1.verify(perf_message, perf_signature, perf_public_key)
-    verify_time = (time.time() - start) / iterations
-    
-    print(f"Average Signing Time: {sign_time*1000:.2f} ms")
-    print(f"Average Verification Time: {verify_time*1000:.2f} ms")
+    def secp256r1_demo():
+        """Demonstrate ECDSA with secp256r1 curve (NIST P-256)"""
+        print("\n\n[ Demo 3: Using secp256r1 (NIST P-256) ]")
+        print("-" * 50)
+        
+        ecdsa_secp256r1 = StandardCurves.secp256r1()
+        print(f"Curve: NIST P-256")
+        print(f"Prime p bit length: {ecdsa_secp256r1.curve.p.bit_length()} bits")
+        
+        # Generate key pair
+        private_key, public_key = ecdsa_secp256r1.generate_keypair()
+        print(f"\nPrivate Key: {private_key}")
+        print(f"Public Key: (truncated)")
+        print(f"  x = {hex(public_key.x)[:50]}...")
+        print(f"  y = {hex(public_key.y)[:50]}...")
+        
+        # Sign a message
+        message = "Important document signature"
+        signature = ecdsa_secp256r1.sign(message, private_key)
+        r, s = signature
+        print(f"\nMessage: {message}")
+        print(f"Signature (r, s): (truncated)")
+        print(f"  r = {hex(r)[:50]}...")
+        print(f"  s = {hex(s)[:50]}...")
+        
+        # Verify signature
+        is_valid = ecdsa_secp256r1.verify(message, signature, public_key)
+        print(f"\nSignature Verification: {'Valid' if is_valid else 'Invalid'}")
+
+        # Test with tampered message
+        tampered_message = "Important document signature altered"
+        is_valid = ecdsa_secp256r1.verify(tampered_message, signature, public_key)
+        print(f"Tampered Message Verification: {'Valid' if is_valid else 'Invalid'}")
+
+    # Run demos
+    small_curve_demo()
+    secp256k1_demo()
+    secp256r1_demo()
 
 
 if __name__ == "__main__":
