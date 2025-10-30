@@ -3,7 +3,7 @@
 
 class SecurityConfig:
     """Security parameters configuration."""
-    
+
     # Hash Algorithm
     HASH_ALGORITHM = "sha3_256"
     """
@@ -19,23 +19,20 @@ class SecurityConfig:
     - sha3_384
     - sha3_512
     """
-    
+
     # Public Key Algorithm
-    PUBLIC_KEY_ALGORITHM = "RSA"
-    PUBLIC_KEY_LENGTH = 1024 
-    
+    PUBLIC_KEY_ALGORITHM = "ECDSA"
+    CURVE_NAME = "secp256k1"  # Bitcoin's curve
+
     # Signature Algorithm
-    SIGNATURE_ALGORITHM = "SHA3-256withRSA"
+    SIGNATURE_ALGORITHM = "SHA256withECDSA"
+    USE_RFC6979 = True  # Use deterministic signatures
     """
-    Supported Algorithms (Java-style naming, will be converted):
-    - MD5withRSA
-    - SHA1withRSA
-    - SHA224withRSA
-    - SHA256withRSA
-    - SHA384withRSA
-    - SHA512withRSA
-    - SHA3-224withRSA
-    - SHA3-256withRSA
-    - SHA3-384withRSA
-    - SHA3-512withRSA
+    Supported Curves:
+    - secp256k1 (Bitcoin's curve)
+    - secp256r1 (NIST P-256)
+
+    Supported Hash Algorithms:
+    - SHA256
+    - SHA3-256
     """

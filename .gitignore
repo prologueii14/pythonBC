@@ -47,3 +47,5 @@ README.md
 
 # tools which no need to push
 pythonBC/test_wallet.py
+
+_venv/
