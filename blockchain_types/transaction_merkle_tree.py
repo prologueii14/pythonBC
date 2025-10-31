@@ -43,7 +43,7 @@ class TransactionMerkleTree:
         
         Args:
             transactions: List of Transaction objects
-            
+        
         Returns:
             Root node of Merkle Tree
         """

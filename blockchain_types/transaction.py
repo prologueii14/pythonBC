@@ -5,6 +5,7 @@ from tools.converter import Converter
 from tools.hash_maker import HashMaker
 from tools.instant_maker import InstantMaker
 from tools.io import IO
+from tools.security import Security
 
 
 class Transaction:
@@ -161,7 +162,7 @@ class Transaction:
     
     def from_base64(self, b64_transaction_string: str) -> bool:
         """
-        Deserialize from Base64 string.
+        Deserialize from Base64 string with enhanced validation.
         
         Args:
             b64_transaction_string: Base64 encoded transaction string
@@ -200,12 +201,51 @@ class Transaction:
                 elif item == "signature":
                     self.signature = Converter.base64_to_string(value)
             
+            if not self._validate_addresses():
+                return False
+                
             return True
         except Exception as e:
             IO.errln(f"Cannot restore Transaction from {b64_transaction_string}.")
             print(e)
             return False
     
+    def _validate_addresses(self) -> bool:
+        """
+        Validate sender and receiver address formats.
+        
+        Returns:
+            True if addresses are valid, False otherwise
+        """
+        try:
+            sender_type = Security.detect_address_type(self.sender)
+            if sender_type == "UNKNOWN":
+                IO.errln(f"Invalid sender address format: {self.sender}")
+                return False
+
+            receiver_type = Security.detect_address_type(self.receiver)
+            if receiver_type == "UNKNOWN":
+                IO.errln(f"Invalid receiver address format: {self.receiver}")
+                return False
+
+            if self.signature:
+                if not Security.validate_signature_format(self.sender, self.signature):
+                    IO.errln("Signature format does not match sender address type")
+                    return False
+            
+            return True
+        except Exception as e:
+            IO.errln(f"Address validation error: {e}")
+            return False
+
+    def get_sender_algorithm(self) -> str:
+        """Get sender's algorithm type."""
+        return Security.detect_address_type(self.sender)
+    
+    def get_receiver_algorithm(self) -> str:
+        """Get receiver's algorithm type."""
+        return Security.detect_address_type(self.receiver)
+
     def to_hash(self) -> str:
         """
         Calculate hash of transaction with all fields.

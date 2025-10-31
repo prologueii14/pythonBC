@@ -3,6 +3,7 @@
 import time
 from datetime import datetime, timezone
 from typing import List, Optional
+import json
 
 from blockchain_types.wallet import Wallet
 from blockchain_types.block import Block
@@ -17,6 +18,7 @@ from tools.instant_maker import InstantMaker
 from tools.security import Security
 from tools.io import IO
 from config.blockchain_config import BlockchainConfig
+from config.security_config import SecurityConfig
 
 
 class Blockchain:
@@ -35,6 +37,7 @@ class Blockchain:
         """
         self.wallet = Wallet(wallet_name)
         IO.outln(f"Account: {self.wallet.get_account()} loaded.")
+        IO.outln(f"Algorithm: {SecurityConfig.PUBLIC_KEY_ALGORITHM}")
         
         self.difficulty = BlockchainConfig.INIT_DIFFICULTY
         self.mining = True
@@ -220,7 +223,13 @@ class Blockchain:
         Returns:
             True if transaction is valid and added, False otherwise
         """
-        # Validate signature
+        if not Security.validate_signature_format(
+            new_transaction.get_sender(),
+            new_transaction.get_signature()
+        ):
+            IO.errln("Invalid signature format for transaction.")
+            return False
+
         if not Security.is_signature_valid(
             new_transaction.get_sender(),
             new_transaction.to_base64_with_content_only(),
@@ -232,26 +241,25 @@ class Blockchain:
         
         IO.outln(new_transaction.to_string_with_content_only())
         IO.outln("Has a valid signature.")
-        
-        # Check sufficient balance
+
         total_cost = new_transaction.get_fee() + new_transaction.get_amount()
-        if total_cost > self.get_account_balance(new_transaction.get_sender()):
-            IO.errln("However, the sender account do not have sufficient fund. Discarding...")
-            return False
+        sender_balance = self.get_account_balance(new_transaction.get_sender())
         
-        # Check for duplicate in pending transactions (FIXED: use == not is)
+        if total_cost > sender_balance:
+            IO.errln(f"Sender has insufficient funds. Required: {total_cost}, Available: {sender_balance}")
+            return False
+
         for pending_transaction in self.pending_transactions:
             if pending_transaction.to_hash() == new_transaction.to_hash():
                 IO.errln(f"Transaction: {new_transaction} is already within pending transaction.")
                 return False
-        
-        # Check for duplicate in chain (FIXED: use == not is)
+
         for block in self.chain:
             for transaction in block.get_transactions():
                 if transaction.to_hash() == new_transaction.to_hash():
+                    IO.errln("Transaction already exists in blockchain.")
                     return False
-        
-        # Transaction is valid
+
         self.pending_transactions.append(new_transaction)
         IO.outln("Transaction Accepted.")
         self.broadcast_network_message(MessageType.BCAST_TRANSACT, new_transaction.to_base64())
@@ -419,6 +427,59 @@ class Blockchain:
                     balance += transaction.get_amount()
         
         return balance
+    
+    def _compare_addresses(self, address1: str, address2: str) -> bool:
+        """
+        Compare two addresses for equality with multi-algorithm support.
+        
+        Args:
+            address1: First address
+            address2: Second address
+            
+        Returns:
+            True if addresses represent the same account
+        """
+        if address1 == address2:
+            return True
+
+        type1 = Security.detect_address_type(address1)
+        type2 = Security.detect_address_type(address2)
+
+        if type1 != type2:
+            return False
+
+        if type1 in ["ECDSA", "DPECDSA"]:
+            try:
+                data1 = json.loads(Converter.base64_to_bytes(address1).decode('utf-8'))
+                data2 = json.loads(Converter.base64_to_bytes(address2).decode('utf-8'))
+                return data1['x'] == data2['x'] and data1['y'] == data2['y']
+            except:
+                return False
+
+        return address1 == address2
+
+    def get_network_status(self) -> dict:
+        """
+        Get network status with algorithm information.
+        
+        Returns:
+            Dictionary with network status
+        """
+        status = {
+            'chain_length': len(self.chain),
+            'pending_transactions': len(self.pending_transactions),
+            'network_nodes': len(self.network_nodes),
+            'mining': self.mining,
+            'difficulty': self.difficulty,
+            'wallet_algorithm': SecurityConfig.PUBLIC_KEY_ALGORITHM,
+            'wallet_address': self.wallet.get_account()
+        }
+        
+        algo_info = Security.get_algorithm_info()
+        status.update(algo_info)
+        
+        return status
+
     def get_network_nodes(self) -> List[NetworkNode]:
         """Get list of network nodes."""
         return self.network_nodes

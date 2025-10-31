@@ -16,7 +16,7 @@ class ECPoint:
         if (x is not None) and (y is not None):
             if not curve.is_on_curve(x, y): # check whether y^2 (mod p) equals x^3 + ax + b (mod p)
                 raise ValueError(f"Point ({x}, {y}) is not on the curve")
-
+    
     def is_infinity(self):
         """Check if this point is the point at infinity (the identity element)"""
         return (self.x is None) and (self.y is None)

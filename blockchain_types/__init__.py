@@ -16,4 +16,5 @@ __all__ = [
     'NetworkNode',
     'MessageType',
     'Blockchain',
+    'AddressUtils',
 ]
