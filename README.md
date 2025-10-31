@@ -134,7 +134,6 @@ python -m pytest tests/test_layer4.py -vLayer 5: P2P Server (5 tests)
 python -m pytest tests/test_layer5.py -v
 ```
 ### 測試覆蓋率
-```markdown
 | Layer | 功能 | 測試數 | 狀態 |
 |-------|------|--------|------|
 | Layer 1 | 基礎工具 | 28 | ✅ |
@@ -143,7 +142,6 @@ python -m pytest tests/test_layer5.py -v
 | Layer 4 | 區塊鏈核心 | 21 | ✅ |
 | Layer 5 | P2P Server | 5 | ✅ |
 | **總計** | | **94** | **✅** |
-```
 ---
 
 ### 🌐 P2P 網路驗證
