@@ -1,5 +1,5 @@
-**注意注意 -> README made by Claude <-
-10/24, 25 -> Modified by YuChen!
+- Main: 透過Claude 製作README
+- Modified by 煜宸, 小榛!
 
 ## 📋 目錄
 
